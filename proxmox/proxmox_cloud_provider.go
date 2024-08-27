@@ -17,13 +17,28 @@ limitations under the License.
 package proxmox
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
+	"fmt"
+	"io"
+	"os"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-type Wrapper struct {
-	protos.UnimplementedCloudProviderServer
-}
+func BuildProxmoxEngine(cloudConfigPath string) cloudprovider.CloudProvider {
+	var configFile io.ReadCloser
+	if cloudConfigPath != "" {
+		var err error
+		configFile, err = os.Open(cloudConfigPath)
+		if err != nil {
+			panic(fmt.Errorf("Couldn't open cloud provider configuration %s: %#v", cloudConfigPath, err))
+		}
+		defer configFile.Close()
+	}
 
-func BuildProxmoxEngine() protos.CloudProviderServer {
-	return Wrapper{}
+	manager, err := newProxmoxManager(configFile)
+	if err != nil {
+		panic(fmt.Errorf("Failed to create Proxmox config: %v", err))
+	}
+
+	return newProxmoxCloudProvider(manager)
 }

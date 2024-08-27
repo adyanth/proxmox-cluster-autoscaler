@@ -28,6 +28,7 @@ import (
 	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/examples/external-grpc-cloud-provider-service/wrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 )
 
@@ -85,7 +86,8 @@ func main() {
 		s = grpc.NewServer(serverOpt)
 	}
 
-	srv := proxmox.BuildProxmoxEngine()
+	cloudProvider := proxmox.BuildProxmoxEngine("")
+	srv := wrapper.NewCloudProviderGrpcWrapper(cloudProvider)
 
 	// listen
 	lis, err := net.Listen("tcp", *address)

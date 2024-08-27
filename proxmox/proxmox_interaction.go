@@ -435,3 +435,9 @@ func (m *ProxmoxManager) OwnedNode(node *apiv1.Node) bool {
 type ProxmoxCloudProvider struct {
 	manager *ProxmoxManager
 }
+
+func newProxmoxCloudProvider(manager *ProxmoxManager) *ProxmoxCloudProvider {
+	return &ProxmoxCloudProvider{
+		manager: manager,
+	}
+}
