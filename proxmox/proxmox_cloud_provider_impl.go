@@ -30,7 +30,7 @@ func (p *ProxmoxCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (p *ProxmoxCloudProvider) NodeGroupForNode(node *apiv1.Node) (ng cloudprovider.NodeGroup, err error) {
-	log.Println("Getting nodegroup for node" + node.Name + " with spec.providerId: " + node.Spec.ProviderID)
+	log.Println("Getting nodegroup for node " + node.Name + " with spec.providerId: " + node.Spec.ProviderID)
 	ng, _, err = p.manager.getDetailsFromNode(node)
 	return ng, err
 }

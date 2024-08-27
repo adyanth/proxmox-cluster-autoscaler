@@ -401,12 +401,14 @@ func (n *NodeGroupManager) getNodeLabels() string {
 func (n *NodeGroupManager) joinIpToK8s(ip netip.Addr, offset int) (err error) {
 	joinCmd := k3sup.MakeJoin()
 
-	joinCmd.Flags().Set("ssh-key", n.K3sConfig.SshKeyFile)
-	joinCmd.Flags().Set("server-user", n.K3sConfig.ServerUser)
-	joinCmd.Flags().Set("server-host", n.K3sConfig.ServerHost)
-	joinCmd.Flags().Set("user", n.K3sConfig.User)
-	joinCmd.Flags().Set("host", ip.String())
-	joinCmd.Flags().Set("k3s-extra-args", fmt.Sprintf(`--kubelet-arg "provider-id=%s --node-label "%s"`, n.getProviderId(offset), n.getNodeLabels()))
+	joinCmd.SetArgs([]string{
+		"--ssh-key", n.K3sConfig.SshKeyFile,
+		"--server-user", n.K3sConfig.ServerUser,
+		"--server-host", n.K3sConfig.ServerHost,
+		"--user", n.K3sConfig.User,
+		"--host", ip.String(),
+		"--k3s-extra-args", fmt.Sprintf(`--kubelet-arg "provider-id=%s" --node-label "%s"`, n.getProviderId(offset), n.getNodeLabels()),
+	})
 
 	log.Printf("Joining %v to %s\n", ip, n.K3sConfig.ServerHost)
 	if err = joinCmd.Execute(); err == nil {
