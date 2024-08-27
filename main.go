@@ -26,9 +26,9 @@ import (
 	"strings"
 
 	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox"
+	"github.com/adyanth/proxmox-cluster-autoscaler/wrapper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/examples/external-grpc-cloud-provider-service/wrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 )
 
@@ -48,13 +48,15 @@ func (flag *MultiStringFlag) Set(value string) error {
 
 var (
 	// flags needed by the external grpc provider service
-	address = flag.String("address", ":8086", "The address to expose the grpc service.")
-	keyCert = flag.String("key-cert", "", "The path to the certificate key file. Empty string for insecure communication.")
-	cert    = flag.String("cert", "", "The path to the certificate file. Empty string for insecure communication.")
-	cacert  = flag.String("ca-cert", "", "The path to the ca certificate file. Empty string for insecure communication.")
+	address     = flag.String("address", ":8086", "The address to expose the grpc service.")
+	keyCert     = flag.String("key-cert", "", "The path to the certificate key file. Empty string for insecure communication.")
+	cert        = flag.String("cert", "", "The path to the certificate file. Empty string for insecure communication.")
+	cacert      = flag.String("ca-cert", "", "The path to the ca certificate file. Empty string for insecure communication.")
+	cloudConfig = flag.String("config", "", "The path to the proxmox autoscaler config.")
 )
 
 func main() {
+	flag.Parse()
 	var s *grpc.Server
 
 	// tls config
@@ -85,8 +87,7 @@ func main() {
 		serverOpt = grpc.Creds(transportCreds)
 		s = grpc.NewServer(serverOpt)
 	}
-
-	cloudProvider := proxmox.BuildProxmoxEngine("")
+	cloudProvider := proxmox.BuildProxmoxEngine(*cloudConfig)
 	srv := wrapper.NewCloudProviderGrpcWrapper(cloudProvider)
 
 	// listen

@@ -26,14 +26,16 @@ import (
 
 func BuildProxmoxEngine(cloudConfigPath string) cloudprovider.CloudProvider {
 	var configFile io.ReadCloser
-	if cloudConfigPath != "" {
-		var err error
-		configFile, err = os.Open(cloudConfigPath)
-		if err != nil {
-			panic(fmt.Errorf("Couldn't open cloud provider configuration %s: %#v", cloudConfigPath, err))
-		}
-		defer configFile.Close()
+	if cloudConfigPath == "" {
+		panic(fmt.Errorf("config file needed, not provided"))
 	}
+
+	var err error
+	configFile, err = os.Open(cloudConfigPath)
+	if err != nil {
+		panic(fmt.Errorf("couldn't open cloud provider configuration %s: %#v", cloudConfigPath, err))
+	}
+	defer configFile.Close()
 
 	manager, err := newProxmoxManager(configFile)
 	if err != nil {
