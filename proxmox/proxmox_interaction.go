@@ -394,6 +394,10 @@ func (n *NodeGroupManager) getProviderId(offset int) string {
 	return fmt.Sprintf("%s://%s/%d/%d", ProviderId, n.NodeConfig.TargetPool, n.NodeConfig.RefCtrId, offset)
 }
 
+func (n *NodeGroupManager) getNodeLabels() string {
+	return fmt.Sprintf("cluster-autoscaler.addons.k8s.io/providerId=%s,cluster-autoscaler.addons.k8s.io/targetPool=%s", ProviderId, n.NodeConfig.TargetPool)
+}
+
 func (n *NodeGroupManager) joinIpToK8s(ip netip.Addr, offset int) (err error) {
 	joinCmd := k3sup.MakeJoin()
 
@@ -402,7 +406,7 @@ func (n *NodeGroupManager) joinIpToK8s(ip netip.Addr, offset int) (err error) {
 	joinCmd.Flags().Set("server-host", n.K3sConfig.ServerHost)
 	joinCmd.Flags().Set("user", n.K3sConfig.User)
 	joinCmd.Flags().Set("host", ip.String())
-	joinCmd.Flags().Set("k3s-extra-args", fmt.Sprintf(`--kubelet-arg "provider-id=%s"`, n.getProviderId(offset)))
+	joinCmd.Flags().Set("k3s-extra-args", fmt.Sprintf(`--kubelet-arg "provider-id=%s --node-label "%s"`, n.getProviderId(offset), n.getNodeLabels()))
 
 	log.Printf("Joining %v to %s\n", ip, n.K3sConfig.ServerHost)
 	if err = joinCmd.Execute(); err == nil {
