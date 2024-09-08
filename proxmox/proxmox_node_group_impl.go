@@ -32,7 +32,7 @@ func (n *NodeGroupManager) getPoolNodes(ctx context.Context) ([]*pm.ClusterResou
 	return nodes, nil
 }
 
-func (n *NodeGroupManager) fillCurrentSize(ctx context.Context) error {
+func (n *NodeGroupManager) FillCurrentSize(ctx context.Context) error {
 	if resources, err := n.getPoolNodes(ctx); err != nil {
 		return err
 	} else {
@@ -77,7 +77,7 @@ func (n *NodeGroupManager) IncreaseSize(delta int) error {
 	n.targetSize = targetSize
 
 	ctx := context.Background()
-	n.fillCurrentSize(ctx)
+	n.FillCurrentSize(ctx)
 	for i := n.currentSize + 1; i <= targetSize; i++ {
 		if err := n.CreateK3sWorker(ctx, i); err != nil {
 			n.DeleteCt(ctx, i)

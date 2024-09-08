@@ -78,7 +78,7 @@ type ProxmoxManager struct {
 	doNotUseNodeLabel bool
 }
 
-func newProxmoxManager(configFileReader io.ReadCloser) (proxmox *ProxmoxManager, err error) {
+func NewProxmoxManager(configFileReader io.ReadCloser) (proxmox *ProxmoxManager, err error) {
 	// Sometimes the node info does not have the label map populated, so cannot use it.
 	// Is this a bug?
 	doNotUseNodeLabel := true
@@ -181,7 +181,7 @@ func (p *ProxmoxManager) getInitialDetails(ctx context.Context) (err error) {
 		}
 
 		// Set current and target size
-		if err = ngm.fillCurrentSize(ctx); err != nil {
+		if err = ngm.FillCurrentSize(ctx); err != nil {
 			return
 		}
 		ngm.targetSize = ngm.currentSize
@@ -358,7 +358,7 @@ func extractDetailsFromProviderId(node *apiv1.Node) (targetPool string, refCtrId
 	return
 }
 
-func (p *ProxmoxManager) getDetailsFromNode(node *apiv1.Node) (n *NodeGroupManager, offset int, err error) {
+func (p *ProxmoxManager) GetDetailsFromNode(node *apiv1.Node) (n *NodeGroupManager, offset int, err error) {
 	targetPool, refCtrId, offset, err := extractDetailsFromProviderId(node)
 	if err != nil {
 		return
@@ -377,7 +377,7 @@ func (p *ProxmoxManager) getDetailsFromNode(node *apiv1.Node) (n *NodeGroupManag
 	return
 }
 
-func (n *NodeGroupManager) getDetailsFromNode(node *apiv1.Node) (offset int, err error) {
+func (n *NodeGroupManager) GetDetailsFromNode(node *apiv1.Node) (offset int, err error) {
 	targetPool, refCtrId, offset, err := extractDetailsFromProviderId(node)
 	if err != nil {
 		return
@@ -395,7 +395,7 @@ func (n *NodeGroupManager) getProviderId(offset int) string {
 }
 
 func (n *NodeGroupManager) getNodeLabels() string {
-	return fmt.Sprintf("cluster-autoscaler.addons.k8s.io/providerId=%s,cluster-autoscaler.addons.k8s.io/targetPool=%s", ProviderId, n.NodeConfig.TargetPool)
+	return fmt.Sprintf("cluster-autoscaler.adyanth.dev/providerId=%s,topology.kubernetes.io/zone=%s", ProviderId, n.NodeConfig.TargetPool)
 }
 
 func (n *NodeGroupManager) joinIpToK8s(ip netip.Addr, offset int) (err error) {
@@ -407,7 +407,7 @@ func (n *NodeGroupManager) joinIpToK8s(ip netip.Addr, offset int) (err error) {
 		"--server-host", n.K3sConfig.ServerHost,
 		"--user", n.K3sConfig.User,
 		"--host", ip.String(),
-		"--k3s-extra-args", fmt.Sprintf(`--kubelet-arg "provider-id=%s" --node-label "%s"`, n.getProviderId(offset), n.getNodeLabels()),
+		"--k3s-extra-args", fmt.Sprintf(`--kubelet-arg=allowed-unsafe-sysctls=net.ipv6.* --kubelet-arg=provider-id=%s --node-label "%s"`, n.getProviderId(offset), n.getNodeLabels()),
 	})
 
 	log.Printf("Joining %v to %s\n", ip, n.K3sConfig.ServerHost)
@@ -426,24 +426,19 @@ func (n *NodeGroupManager) CreateK3sWorker(ctx context.Context, newCtrOffset int
 }
 
 func (n *NodeGroupManager) OwnedNodeOffset(node *apiv1.Node) (nodeOffset int, err error) {
-	return n.getDetailsFromNode(node)
+	return n.GetDetailsFromNode(node)
 }
 
 func (n *NodeGroupManager) OwnedNode(node *apiv1.Node) bool {
-	_, err := n.getDetailsFromNode(node)
+	_, err := n.GetDetailsFromNode(node)
 	return err == nil
+}
+
+func (n *NodeGroupManager) HasNodeInstance(offset int) bool {
+	_, err := n.node.Container(context.Background(), n.getCtrIdFromOffset(offset))
+	return err != nil
 }
 
 func (m *ProxmoxManager) OwnedNode(node *apiv1.Node) bool {
 	return strings.HasPrefix(node.Spec.ProviderID, "proxmox://")
-}
-
-type ProxmoxCloudProvider struct {
-	manager *ProxmoxManager
-}
-
-func newProxmoxCloudProvider(manager *ProxmoxManager) *ProxmoxCloudProvider {
-	return &ProxmoxCloudProvider{
-		manager: manager,
-	}
 }

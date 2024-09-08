@@ -14,15 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package proxmox
+package cloudprovider
 
 import (
 	"fmt"
 	"io"
 	"os"
 
+	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
+
+type ProxmoxCloudProvider struct {
+	manager *proxmox.ProxmoxManager
+}
+
+func newProxmoxCloudProvider(manager *proxmox.ProxmoxManager) *ProxmoxCloudProvider {
+	return &ProxmoxCloudProvider{
+		manager: manager,
+	}
+}
 
 func BuildProxmoxEngine(cloudConfigPath string) cloudprovider.CloudProvider {
 	var configFile io.ReadCloser
@@ -37,9 +48,9 @@ func BuildProxmoxEngine(cloudConfigPath string) cloudprovider.CloudProvider {
 	}
 	defer configFile.Close()
 
-	manager, err := newProxmoxManager(configFile)
+	manager, err := proxmox.NewProxmoxManager(configFile)
 	if err != nil {
-		panic(fmt.Errorf("Failed to create Proxmox config: %v", err))
+		panic(fmt.Errorf("failed to create Proxmox config: %v", err))
 	}
 
 	return newProxmoxCloudProvider(manager)

@@ -25,7 +25,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox"
+	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox/cloudprovider"
 	"github.com/adyanth/proxmox-cluster-autoscaler/wrapper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -89,7 +89,7 @@ func main() {
 		serverOpt = grpc.Creds(transportCreds)
 		s = grpc.NewServer(serverOpt)
 	}
-	cloudProvider := proxmox.BuildProxmoxEngine(*cloudConfig)
+	cloudProvider := cloudprovider.BuildProxmoxEngine(*cloudConfig)
 	srv := wrapper.NewCloudProviderGrpcWrapper(cloudProvider)
 
 	// listen
