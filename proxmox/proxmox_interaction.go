@@ -67,22 +67,14 @@ type NodeGroupManager struct {
 	refCtr      *pm.Container
 	currentSize int
 	targetSize  int
-
-	doNotUseNodeLabel bool
 }
 
 type ProxmoxManager struct {
 	Client            *pm.Client
 	NodeGroupManagers map[string]*NodeGroupManager
-
-	doNotUseNodeLabel bool
 }
 
 func NewProxmoxManager(configFileReader io.ReadCloser) (proxmox *ProxmoxManager, err error) {
-	// Sometimes the node info does not have the label map populated, so cannot use it.
-	// Is this a bug?
-	doNotUseNodeLabel := true
-
 	data, err := io.ReadAll(configFileReader)
 	if err != nil {
 		return
@@ -125,17 +117,14 @@ func NewProxmoxManager(configFileReader io.ReadCloser) (proxmox *ProxmoxManager,
 			K3sConfig:      config.K3sConfig,
 			TimeoutSeconds: config.ProxmoxConfig.TimeoutSeconds,
 
-			currentSize:       0,
-			targetSize:        0,
-			doNotUseNodeLabel: doNotUseNodeLabel,
+			currentSize: 0,
+			targetSize:  0,
 		}
 	}
 
 	proxmoxManager := &ProxmoxManager{
 		Client:            client,
 		NodeGroupManagers: nodeGroupManagers,
-
-		doNotUseNodeLabel: doNotUseNodeLabel,
 	}
 
 	if err = proxmoxManager.getInitialDetails(context.Background()); err != nil {
@@ -198,8 +187,12 @@ func (n *NodeGroupManager) getTagsForOffset(offset int) string {
 	return strings.Join(tags, ";")
 }
 
-func (n *NodeGroupManager) getTagsFromTagString(tags string) []string {
-	return strings.Split(tags, ";")
+func (n *NodeGroupManager) getOffsetFromHostName(hostname string) (int, error) {
+	if strings.HasPrefix(hostname, n.getHostNamePrefix()) {
+		offset, err := strconv.ParseInt(strings.Split(hostname, n.getHostNamePrefix())[1], 10, 0)
+		return int(offset), err
+	}
+	return 0, fmt.Errorf("worker name prefix found")
 }
 
 func (n *NodeGroupManager) getHostNameForOffset(offset int) string {

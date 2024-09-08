@@ -148,8 +148,13 @@ func (n *NodeGroupManager) Nodes() (instance []cloudprovider.Instance, err error
 		return nil, err
 	}
 	for _, node := range nodes {
+		offset, err := n.getOffsetFromHostName(node.Name)
+		if err != nil {
+			fmt.Printf("Incorrect hostname for node %v, skipping\n", node.Name)
+			continue
+		}
 		instance = append(instance, cloudprovider.Instance{
-			Id: node.Name,
+			Id: n.getProviderId(offset),
 		})
 	}
 	return
