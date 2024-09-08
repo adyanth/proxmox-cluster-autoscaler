@@ -3,7 +3,6 @@ package cloudprovider
 import (
 	"context"
 	"fmt"
-	"log"
 	"runtime"
 
 	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox"
@@ -44,7 +43,6 @@ func (p *ProxmoxCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // occurred. Must be implemented.
 func (p *ProxmoxCloudProvider) NodeGroupForNode(node *apiv1.Node) (ng cloudprovider.NodeGroup, err error) {
 	trace()
-	log.Println("Getting nodegroup for node " + node.Name + " with spec.providerId: " + node.Spec.ProviderID)
 	ng, _, err = p.manager.GetDetailsFromNode(node)
 	return ng, err
 }
