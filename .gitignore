@@ -1,2 +1,6 @@
-ca-proxmox-cloud-provider-amd64
-ca-proxmox-cloud-provider-arm64
+run.sh
+*.log
+*.yml
+*.yaml
+*-proxmox-cloud-provider-amd64
+*-proxmox-cloud-provider-arm64

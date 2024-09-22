@@ -25,8 +25,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/adyanth/proxmox-cluster-autoscaler/proxmox/cloudprovider"
-	"github.com/adyanth/proxmox-cluster-autoscaler/wrapper"
+	"github.com/adyanth/proxmox-cluster-autoscaler/cloudprovider/cloudprovider"
+	"github.com/adyanth/proxmox-cluster-autoscaler/cloudprovider/wrapper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"

@@ -57,12 +57,12 @@ clean-arch-%:
 	rm -f ca-proxmox-cloud-provider-$*
 
 docker-builder:
-	docker build --network=${DOCKER_NETWORK} -t autoscaling-builder ../../../../../builder
+	docker build --network=${DOCKER_NETWORK} -t autoscaling-builder ../../../../../../builder
 
 build-in-docker: build-in-docker-arch-$(GOARCH)
 
 build-in-docker-arch-%: clean-arch-% docker-builder
-	docker run ${RM_FLAG} -v `pwd`/../../../../:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/:Z autoscaling-builder:latest \
+	docker run ${RM_FLAG} -v `pwd`/../../../../../:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/:Z autoscaling-builder:latest \
 		bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/examples/proxmox-cloud-provider-service && BUILD_TAGS=${BUILD_TAGS} LDFLAGS="${LDFLAGS}" make build-arch-$*'
 
 container: container-arch-$(GOARCH)
