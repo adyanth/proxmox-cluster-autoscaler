@@ -3,7 +3,6 @@ package proxmox
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +17,7 @@ import (
 	pm "github.com/luthermonson/go-proxmox"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -81,7 +81,7 @@ func NewProxmoxManager(configFileReader io.ReadCloser) (proxmox *ProxmoxManager,
 	}
 
 	config := Config{}
-	if err = json.Unmarshal(data, &config); err != nil {
+	if err = yaml.Unmarshal(data, &config); err != nil {
 		return
 	}
 
