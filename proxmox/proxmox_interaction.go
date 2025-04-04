@@ -146,15 +146,19 @@ func (p *ProxmoxManager) getInitialDetails(ctx context.Context) (err error) {
 		return
 	}
 
-	// Get the node object
-	log.Printf("Getting node object for %s\n", nodeStatuses[0].Node)
-	node, err := p.Client.Node(ctx, nodeStatuses[0].Node)
-	if err != nil {
-		return
-	}
-
 	for _, ngm := range p.NodeGroupManagers {
-		ngm.node = node
+		// Match the node the refCtr is in
+		for i := range nodeStatuses {
+			if nodeStatuses[i].Node == ngm.refCtr.Node {
+				// Get the node object
+				log.Printf("Getting node object for %s\n", nodeStatuses[0].Node)
+				ngm.node, err = p.Client.Node(ctx, nodeStatuses[0].Node)
+				if err != nil {
+					return
+				}
+				break
+			}
+		}
 
 		// Get reference container object
 		if ngm.refCtr == nil {
