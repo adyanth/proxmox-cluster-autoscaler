@@ -40,6 +40,7 @@ type K3sConfig struct {
 	ServerUser string // Master node SSH login user
 	ServerHost string // Master node IP or Hostname
 	User       string // Worker node SSH login user
+	K3sChannel string // K3s version to install
 }
 
 type ProxmoxConfig struct {
@@ -400,6 +401,7 @@ func (n *NodeGroupManager) joinIpToK8s(ip netip.Addr, offset int) (err error) {
 		"--server-host", n.K3sConfig.ServerHost,
 		"--user", n.K3sConfig.User,
 		"--host", ip.String(),
+		"--k3s-channel", n.K3sConfig.K3sChannel,
 		"--k3s-extra-args", fmt.Sprintf(`--kubelet-arg=allowed-unsafe-sysctls=net.ipv6.* --kubelet-arg=provider-id=%s --node-label "%s"`, n.getProviderId(offset), n.getNodeLabels()),
 	})
 
