@@ -230,12 +230,15 @@ func (n *NodeGroupManager) cloneToNewCt(ctx context.Context, newCtrOffset int) (
 		return
 	}
 
-	// Add needed tags
+	// Add needed tags and set the mountpoint for /boot
 	tags := n.getTagsForOffset(newCtrOffset)
-	log.Printf("Adding tags to the new container %s: %s\n", newCtr.Name, tags)
+	log.Printf("Adding tags and setting mountpoint for /boot to the new container %s: %s\n", newCtr.Name, tags)
 	_, err = newCtr.Config(ctx, pm.ContainerOption{
 		Name:  "tags",
 		Value: tags,
+	}, pm.ContainerOption{
+		Name:  "mp0",
+		Value: "/boot,mp=/boot,ro=1 mp0: /boot,mp=/boot,ro=1",
 	})
 	if err != nil {
 		return
